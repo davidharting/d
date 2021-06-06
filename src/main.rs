@@ -1,5 +1,7 @@
 use clap::{AppSettings, Clap};
 
+mod rand;
+
 #[derive(Clap)]
 #[clap(version = "1.0", author = "David Harting <david.harting@hey.com>")]
 #[clap(setting = AppSettings::ColoredHelp)]
@@ -17,7 +19,7 @@ enum SubCommand {
 #[derive(Clap)]
 struct Rand{
     #[clap(short, long, default_value="10")]
-    length: u32,
+    length: usize,
 }
 
 fn main() {
@@ -25,7 +27,10 @@ fn main() {
 
     match opts.subcmd {
         SubCommand::Rand(r) => {
-            println!("Ran 'rand' with length {}", r.length)
+            let config  = rand::RandConfig {
+                length: r.length
+            };
+            println!("{}", rand::generate(&config));
         }
     }
 }
