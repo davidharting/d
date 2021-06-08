@@ -1,6 +1,7 @@
 use clap::{AppSettings, Clap};
 
 mod rand;
+mod pj;
 
 #[derive(Clap)]
 #[clap(version = "1.0", author = "David Harting <david.harting@hey.com>")]
@@ -25,7 +26,16 @@ struct Rand {
 }
 
 #[derive(Clap)]
-struct Pj {}
+struct Pj {
+    #[clap(subcommand)]
+    subcmd: PjSubcmd,
+}
+
+#[derive(Clap)]
+enum PjSubcmd {
+    #[clap(about="List scripts from a package.json")]
+    Scripts
+}
 
 fn main() {
     let opts: Opts = Opts::parse();
@@ -35,8 +45,31 @@ fn main() {
             let config = rand::RandConfig { length: r.length };
             println!("{}", rand::generate(&config));
         }
-        SubCommand::Pj(_) => {
-            println!("Running pj");
+        SubCommand::Pj(pj) => {
+            match pj.subcmd {
+                PjSubcmd::Scripts => {
+                    match pj::extract_scripts_from_package_json() {
+                        Ok(scripts) => {
+                            for (key, val) in scripts.iter() {
+                                println!("{}:\t\t{}", key, val);
+                            }
+                        },
+                        Err(e) => {
+                            match e {
+                                pj::PackageJsonError::FileNotFound => {
+                                    println!("No package.json in curent directory.");
+                                },
+                                pj::PackageJsonError::UnableToReadFile(io_error) => {
+                                    println!("Unable to read file.\n{}", io_error);
+                                },
+                                pj::PackageJsonError::Parse(json_error) => {
+                                    println!("Unable to parse package.json\n{}", json_error);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
