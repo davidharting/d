@@ -123,7 +123,7 @@ mod tests {
       Ok(_) => {
         Err("Contents should not have parsed.")
       },
-      Err(e) => {
+      Err(_) => {
         Ok(())
       }
     }
